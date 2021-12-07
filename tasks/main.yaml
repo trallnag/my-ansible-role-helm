@@ -1,0 +1,77 @@
+# ------------------------------------------------------------------------------
+
+
+- name: Install Helm with asdf
+  ansible.builtin.import_role:
+    name: trallnag.asdf_plugin
+  vars:
+    asdf_plugin_name: helm
+    asdf_plugin_git_url: https://github.com/Antiarchitect/asdf-helm.git
+    asdf_plugin_package_versions: ["3.7.1"]
+    asdf_plugin_package_version_global: "3.7.1"
+
+- name: Install Helm plugin helm-diff
+  kubernetes.core.helm_plugin:
+    plugin_path: https://github.com/databus23/helm-diff
+    state: present
+
+
+# ------------------------------------------------------------------------------
+# Bash
+
+
+- name: Setup completion in Bash
+  ansible.builtin.shell: |
+    sudo mkdir -p /etc/bash_completion.d
+
+    file=/etc/bash_completion.d/helm
+
+    >> $file
+
+    hash_before=$(cat $file | sha256sum)
+
+    helm completion bash | sudo tee /etc/bash_completion.d/helm
+
+    hash_after=$(cat $file | sha256sum)
+
+    if [ $hash_before != $hash_after ]; then
+      echo status=changed
+    fi
+  args: {executable: /usr/bin/bash, warn: false}
+  register: task
+  changed_when: "'status=changed' in task.stdout"
+
+
+# ------------------------------------------------------------------------------
+# Zsh
+
+
+- name: Setup completion in Zsh
+  ansible.builtin.shell: |
+    sudo mkdir -p /usr/local/share/zsh/site-functions
+
+    file=/usr/local/share/zsh/site-functions/_helm
+
+    >> $file
+
+    hash_before=$(cat $file | sha256sum)
+
+    helm completion zsh > $file
+
+    hash_after=$(cat $file | sha256sum)
+
+    if [ $hash_before != $hash_after ]; then
+      echo status=changed
+
+      zcd=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump
+
+      rm -rf $zcd
+      autoload -Uz compinit bashcompinit && compinit -d $zcd && bashcompinit
+      zcompile $zcd
+    fi
+  args: {executable: /usr/bin/zsh, warn: false}
+  register: task
+  changed_when: "'status=changed' in task.stdout"
+
+
+# ------------------------------------------------------------------------------
