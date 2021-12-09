@@ -30,7 +30,7 @@
 
     hash_before=$(cat $file | sha256sum)
 
-    helm completion bash | sudo tee /etc/bash_completion.d/helm
+    helm completion bash | sudo tee $file > /dev/null
 
     hash_after=$(cat $file | sha256sum)
 
@@ -52,24 +52,26 @@
 
     file=/usr/local/share/zsh/site-functions/_helm
 
-    >> $file
+    sudo sh -c ">> $file"
 
     hash_before=$(cat $file | sha256sum)
 
-    helm completion zsh > $file
+    helm completion zsh | sudo tee $file > /dev/null
 
     hash_after=$(cat $file | sha256sum)
 
     if [ $hash_before != $hash_after ]; then
       echo status=changed
 
-      zcd=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump
+      if command -v zsh; then
+        zcd=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump
 
-      rm -rf $zcd
-      autoload -Uz compinit bashcompinit && compinit -d $zcd && bashcompinit
-      zcompile $zcd
+        rm -rf $zcd
+        zsh -c "autoload -Uz compinit bashcompinit && compinit -d $zcd && bashcompinit"
+        zsh -c "zcompile $zcd"
+      fi
     fi
-  args: {executable: /usr/bin/zsh, warn: false}
+  args: {executable: /usr/bin/bash, warn: false}
   register: task
   changed_when: "'status=changed' in task.stdout"
 
