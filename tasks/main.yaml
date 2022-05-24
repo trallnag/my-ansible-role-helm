@@ -1,14 +1,14 @@
 # ------------------------------------------------------------------------------
 
 
-- name: Install Helm with asdf
+- name: Install with asdf
   ansible.builtin.import_role:
     name: trallnag.asdf_plugin
   vars:
     asdf_plugin_name: helm
     asdf_plugin_git_url: https://github.com/Antiarchitect/asdf-helm.git
-    asdf_plugin_package_versions: ["3.8.2"]
-    asdf_plugin_package_version_global: "3.8.2"
+    asdf_plugin_package_versions: ["3.9.0"]
+    asdf_plugin_package_version_global: "3.9.0"
 
 - name: Install Helm plugin helm-diff
   kubernetes.core.helm_plugin:

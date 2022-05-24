@@ -3,4 +3,15 @@
 
 # Ansible Role `helm`
 
-* <https://github.com/helm/helm>
+- <https://github.com/helm/helm>
+
+## FAQ
+
+## How to change Helm version?
+
+Get the version reference you want.
+
+- <https://github.com/helm/helm/releases>
+
+Go to [`tasks/main.yaml`](tasks/main.yaml) and set the version in the
+"Install with asdf" task.
